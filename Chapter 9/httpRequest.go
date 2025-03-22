@@ -1,8 +1,9 @@
-/*Для отправки запросов в пакете net/http определен ряд функций:
-func Get(url string) (resp *Response, err error) -> отправляет GET-запрос на URL и возвращает ответ.
-func Head(url string) (resp *Response, err error) -> отправляет HEAD-запрос на URL и возвращает ответ.
-func Post(url string, contentType string, body io.Reader) (resp *Response, err error) -> отправляет POST-запрос на URL с телом body.
-func PostForm(url string, data url.Values) (resp *Response, err error) -> отправляет POST-запрос на URL с данными формы.
+/*
+Для управления запросом и его параметрами в Go используется объект http.Request. Он позволяет установить различные настройки, добавить куки, заголовки, определить тело запроса. Для создания объекта http.Request применяется функция http.NewRequest():
+	func NewRequest(method, url string, body io.Reader) (*Request, error)
+Функция принимает три параметра. Первый параметр - тип запроса в виде строки ("GET", "POST"). Второй параметр - адрес ресурса. Третий параметр - тело запроса.
+Для отправки объекта Request можно применять метод Do():
+	Do(req *http.Request) (*http.Response, error)
 */
 
 package main
@@ -15,12 +16,19 @@ import (
 )
 
 func main() {
-	// Отправка GET-запроса на URL и вывод тела ответа в стандартный вывод.
-	resp, err := http.Get("https://google.com")
+	client := &http.Client{} // создаем клиент
+	req, err := http.NewRequest(
+		"GET", "https://google.com", nil, // создаем запрос (GET-запрос на URL)
+	)
+	// добавляем заголовки
+	req.Header.Add("Accept", "text/html")     // добавляем заголовок Accept
+	req.Header.Add("User-Agent", "MSIE/15.0") // добавляем заголовок User-Agent
+
+	resp, err := client.Do(req) // отправляем запрос и получаем ответ
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer resp.Body.Close()
-	io.Copy(os.Stdout, resp.Body) // Копирование тела ответа в стандартный вывод.
+	io.Copy(os.Stdout, resp.Body)
 }
